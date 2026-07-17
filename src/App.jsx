@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { db } from './firebase';
+import { collection, query, orderBy, limit, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { 
   Flame, 
   Sparkles, 
@@ -136,10 +138,26 @@ function App() {
   const [webcamStream, setWebcamStream] = useState(null);
   const [webcamError, setWebcamError] = useState('');
   
-  const [aura, setAura] = useState(0);
-  const [upgrades, setUpgrades] = useState(
-    UPGRADES_LIST.map(upg => ({ ...upg, count: 0 }))
-  );
+  const [aura, setAura] = useState(() => {
+    const saved = localStorage.getItem('aura_pts');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [upgrades, setUpgrades] = useState(() => {
+    const saved = localStorage.getItem('aura_upgrades');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return UPGRADES_LIST.map(upg => ({ ...upg, count: 0 }));
+  });
+
+  // Persist aura and upgrades across page refreshes
+  useEffect(() => {
+    localStorage.setItem('aura_pts', aura.toString());
+  }, [aura]);
+
+  useEffect(() => {
+    localStorage.setItem('aura_upgrades', JSON.stringify(upgrades));
+  }, [upgrades]);
   
   const [activeTab, setActiveTab] = useState('shop'); // 'shop' | 'leaderboard'
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -161,43 +179,44 @@ function App() {
 
   const currentTier = getAuraTier(aura);
 
-  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
+  const [globalLeaderboard, setGlobalLeaderboard] = useState([
+    { username: '👑 Chico Coins', aura: 999999, tier: 'Chad Supremo 👑' },
+    { username: '🥈 GigaChad Original', aura: 750000, tier: 'Mewing God 🤫' },
+    { username: '🥉 Baby Gronk', aura: 450000, tier: 'Sigma Rizzler ⚡' }
+  ]);
 
-  // Connect to realtime SSE server
+  // Connect to realtime Firebase Firestore database
   useEffect(() => {
     if (!username) return;
-    const apiHost = window.location.hostname;
-    const eventSource = new EventSource(`http://${apiHost}:3001/api/live`);
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (Array.isArray(data)) {
-          setGlobalLeaderboard(data);
-        }
-      } catch (err) {
-        console.error('SSE fail:', err);
+    const q = query(collection(db, 'leaderboard'), orderBy('aura', 'desc'), limit(50));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const leaderboardData = [];
+      snapshot.forEach((doc) => {
+        leaderboardData.push(doc.data());
+      });
+      if (leaderboardData.length > 0) {
+        setGlobalLeaderboard(leaderboardData);
       }
-    };
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
-    return () => eventSource.close();
+    }, (err) => {
+      console.error("Firestore read error:", err);
+    });
+    return () => unsubscribe();
   }, [username]);
 
-  // Throttle updates to the leaderboard server
+  // Throttle updates to the leaderboard database
   useEffect(() => {
     if (!username || aura <= 0) return;
-    const timer = setTimeout(() => {
-      const apiHost = window.location.hostname;
-      fetch(`http://${apiHost}:3001/api/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
+    const timer = setTimeout(async () => {
+      const normalizedName = username.startsWith('@') ? username : `@${username}`;
+      try {
+        await setDoc(doc(db, 'leaderboard', normalizedName), {
+          username: normalizedName,
           aura: Math.round(aura),
           tier: currentTier.title
-        })
-      }).catch(() => {});
+        });
+      } catch (err) {
+        console.error("Firestore write error:", err);
+      }
     }, 3000);
     return () => clearTimeout(timer);
   }, [aura, username, currentTier]);
