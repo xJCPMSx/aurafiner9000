@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-darker: #050409;
+  --bg-dark: #0b0914;
+  --bg-card: rgba(20, 16, 35, 0.6);
+  --bg-card-hover: rgba(28, 22, 49, 0.85);
+  --border-neon: rgba(186, 73, 255, 0.2);
+  --border-neon-hover: rgba(186, 73, 255, 0.45);
+  --primary: #c084fc;
+  --primary-glow: rgba(192, 132, 252, 0.5);
+  --secondary: #22d3ee;
+  --secondary-glow: rgba(34, 211, 238, 0.5);
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --success: #34d399;
+  --danger: #f87171;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-darker);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(192, 132, 252, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(76, 29, 149, 0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-darker);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-neon-hover);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-neon);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-neon-hover);
+  box-shadow: 0 12px 40px 0 rgba(192, 132, 252, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--primary-glow);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--primary);
+  }
+}
+
+@keyframes floatBackground {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes rizzPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Float text animation container */
+.float-container {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.floating-aura {
+  position: absolute;
+  color: var(--secondary);
+  font-weight: 800;
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.4);
+  animation: floatUp 1s ease-out forwards;
+  user-select: none;
+}
+
+/* Upgrade Card Animation & Styles */
+.upgrade-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.upgrade-card.unlocked:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(192, 132, 252, 0.3);
+  cursor: pointer;
+}
+
+.upgrade-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Custom glowing button */
+.btn-glow {
+  background: linear-gradient(135deg, var(--primary) 0%, #a855f7 50%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+  transition: all 0.25s ease;
+}
+
+.btn-glow:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
+}
+
+.btn-glow:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn-glow:disabled {
+  background: #374151;
+  color: #9ca3af;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Grid layout presets */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 2.1fr 0.9fr;
+  }
+}
+
+.left-column-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .left-column-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 1.35fr;
+    align-items: start;
+  }
+}
