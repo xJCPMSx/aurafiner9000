@@ -147,7 +147,13 @@ function App() {
     if (saved) {
       try { 
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          // Merge saved counts with base UPGRADES_LIST to retain Icon component functions!
+          return UPGRADES_LIST.map(baseUpg => {
+            const savedUpg = parsed.find(p => p.id === baseUpg.id);
+            return { ...baseUpg, count: savedUpg ? savedUpg.count : 0 };
+          });
+        }
       } catch (e) {}
     }
     return UPGRADES_LIST.map(upg => ({ ...upg, count: 0 }));
@@ -159,7 +165,9 @@ function App() {
   }, [aura]);
 
   useEffect(() => {
-    localStorage.setItem('aura_upgrades', JSON.stringify(upgrades));
+    // Save only minimalistic counts to avoid storing large properties globally
+    const toSave = upgrades.map(u => ({ id: u.id, count: u.count }));
+    localStorage.setItem('aura_upgrades', JSON.stringify(toSave));
   }, [upgrades]);
   
   const [activeTab, setActiveTab] = useState('shop'); // 'shop' | 'leaderboard'
