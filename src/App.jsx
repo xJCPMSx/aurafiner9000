@@ -145,7 +145,10 @@ function App() {
   const [upgrades, setUpgrades] = useState(() => {
     const saved = localStorage.getItem('aura_upgrades');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { 
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
     }
     return UPGRADES_LIST.map(upg => ({ ...upg, count: 0 }));
   });
